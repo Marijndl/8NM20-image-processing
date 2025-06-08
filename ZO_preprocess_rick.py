@@ -22,7 +22,7 @@ def process_pair(folder, actin_name, zo1_name, i, correction_factor):
         IJ.run(imp2, "Rigid Registration",
                "initialtransform=[] n=3 tolerance=0.01 level=7 stoplevel=2 materialcenterandbbox=[] showtransformed template=" + actin_name + " measure=MutualInfo")
 
-    # Multiply imp1 by 0.185
+    # Multiply imp1 by 0.115
     IJ.run(imp1, "Multiply...", "value=" + str(correction_factor))
 
     # Get transformed result and subtract imp1 from it
