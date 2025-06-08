@@ -164,19 +164,4 @@ dapi_names = [x for x in file_names if x.split("_")[2] == u"DAPI"]
 for i in range(len(actin_names)):
 	process_images(data_folder, actin_names[i], dapi_names[i], output_folder, i)
 
-# # Optional: Final cleanup of all remaining image windows and utility windows
-# close_all_at_end = False  # Set to True to close everything
-# if close_all_at_end:
-#     while WindowManager.getImageCount() > 0:
-#         img = WindowManager.getCurrentImage()
-#         if img:
-#             img.changes = False  # Don't ask to save
-#             img.close()
-#
-#     utility_windows_to_close = ["Log", "Results", "Summary", "ROI Manager"]  # Add others if needed
-#     for title in utility_windows_to_close:
-#         win = WindowManager.getWindow(title)
-#         if win is not None:
-#             win.dispose()
-
 print("Script finished.")
