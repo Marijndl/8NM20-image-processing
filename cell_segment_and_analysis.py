@@ -155,8 +155,8 @@ if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
 file_names = [f for f in os.listdir(data_folder) if f.endswith(".tif")]
-actin_names = [x for x in file_names if x.split("_")[2] == u"ACTIN"]
-dapi_names = [x for x in file_names if x.split("_")[2] == u"DAPI"]
+actin_names = sorted([x for x in file_names if x.split("_")[2] == u"ACTIN"])
+dapi_names = sorted([x for x in file_names if x.split("_")[2] == u"DAPI"])
 
 
 #for i in range(1):

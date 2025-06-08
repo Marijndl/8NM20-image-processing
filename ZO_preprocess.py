@@ -66,8 +66,8 @@ output_folder = "C:/Users/20203226/OneDrive - TU Eindhoven/8NM20 optical microsc
 correction_factor = 0.185 #Found using coloc2 in Imagej
 
 file_names = [f for f in os.listdir(data_folder) if f.endswith(".tif")]
-actin_names = [x for x in file_names if x.split("_")[2] == u"ACTIN"]
-zo1_names = [x for x in file_names if x.split("_")[2] == u"ZO1"]
+actin_names = sorted([x for x in file_names if x.split("_")[2] == u"ACTIN"])
+zo1_names = sorted([x for x in file_names if x.split("_")[2] == u"ZO1"])
 
 # for i in range(len(actin_names)):
 for i in range(len(actin_names)):
