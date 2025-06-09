@@ -3,7 +3,7 @@ import glob
 import os
 
 # Define the folder path
-folder_path = r"C:\Users\20203226\OneDrive - TU Eindhoven\8NM20 optical microscopy\paper review\pipelines\data_rick_1"
+folder_path = r"C:\Users\20203226\OneDrive - TU Eindhoven\8NM20 optical microscopy\paper review\pipelines\data_marijn_1"
 
 # Find all matching CSV files
 csv_files = sorted(glob.glob(os.path.join(folder_path, "Results_*.csv")))
