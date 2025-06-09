@@ -60,4 +60,44 @@ dapi_names = sorted([x for x in file_names if "DAPI" in x])
 for i in range(len(actin_names)):
     process_pair(data_folder, actin_names[i], dapi_names[i], i, output_folder)
 
+# After processing all image pairs
 
+# Cell line names
+cell_lines = ["EMT", "MDA-231", "MDA-468", "MCF7"]
+image_titles = []
+
+# Open images and label them
+for row in range(4):
+    for col in range(2):
+        index = row + 1 if col == 0 else row + 5
+        image_path = output_folder + "Well_" + str(index) + ".jpg"
+        imp = IJ.openImage(image_path)
+        imp.show()
+
+        # Create label
+        label = cell_lines[row]
+        if col == 1:
+            label += " (neg ctrl)"
+
+        # Add label as overlay text
+        IJ.run(imp, "Add Text...", "text=" + label + " font=20 antialiased bold location=[Upper Left] color=white")
+
+        # Update title to keep track
+        title = "Labeled_" + str(index)
+        imp.setTitle(title)
+        image_titles.append(title)
+
+# Make montage: 2 columns (normal, negative), 4 rows (cell lines)
+IJ.run("Images to Stack", "name=Stack title=[] use")
+stack = WindowManager.getImage("Stack")
+IJ.run(stack, "Make Montage...", "columns=2 rows=4 scale=1 label")
+IJ.saveAs("Jpeg", output_folder + "Final_Montage.jpg")
+
+# Close everything
+for j in reversed(range(WindowManager.getImageCount())):
+    img = WindowManager.getImage(j + 1)
+    if img is not None:
+        img.changes = False
+        img.close()
+
+print("Saved Final_Montage.jpg")
