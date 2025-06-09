@@ -25,7 +25,7 @@ for row in range(2):
         ax.axis('off')
 
         label = cell_lines[index]
-        ax.set_title(label, fontsize=14, fontweight='bold')
+        ax.set_title(label, fontsize=18, fontweight='bold')
 
 # Adjust spacing
 plt.subplots_adjust(wspace=0.01, hspace=-0.3)
