@@ -1,39 +1,47 @@
 import os
 
 from ij import IJ, WindowManager
-from ij import Prefs
 from ij.plugin import ImageCalculator
-from java.awt import Window
-from javax.swing import JFrame
 
 def process_pair(folder, actin_name, dapi_name, i, output_folder):
-    # Open both images from disk
+    # Open ACTIN and DAPI images
     im_actin = IJ.openImage(folder + "\\" + actin_name)
     IJ.run(im_actin, "16-bit", "")
+    im_actin.show()
 
     im_dapi = IJ.openImage(folder + "\\" + dapi_name)
     IJ.run(im_dapi, "16-bit", "")
+    im_dapi.show()
 
-    # Process ZO1 iamge
-    ic = ImageCalculator()
+    # Open processed ZO1 image and corresponding mask
     imp_zo1 = IJ.openImage(output_folder + "/processed_zo1_" + str(i + 1) + ".tif")
+    imp_zo1.show()
+
     imp_zo1_mask = IJ.openImage(output_folder + "/TJ_" + str(i + 1) + ".tif")
+    imp_zo1_mask.show()
     IJ.run(imp_zo1_mask, "Divide...", "value=255.000")
+
+    # Apply mask to ZO1 image
+    ic = ImageCalculator()
     zo1_masked = ic.run("Multiply create", imp_zo1, imp_zo1_mask)
-    zo1_masked.setTitle("ZO1_masked" + str(i + 1))
+    title_zo1_masked = "ZO1_masked_" + str(i + 1)
+    zo1_masked.setTitle(title_zo1_masked)
+    zo1_masked.show()
     IJ.run(zo1_masked, "Multiply...", "value=10.000")
 
-    IJ.run("Merge Channels...",
-           "c1=[Result of processed_zo1_1.tif] c2=marijn1_TJ_ACTIN_MDL_well1_1_ch00.tif c3=marijn1_TJ_DAPI_MDL_well1_1_ch00.tif create keep")
+    # Merge channels using image titles dynamically
+    merge_command = "c1=" + title_zo1_masked + " c2=" + im_actin.getTitle() + " c3=" + im_dapi.getTitle() + " create keep"
+    IJ.run("Merge Channels...", merge_command)
+
     im_merged = WindowManager.getImage("Composite")
     IJ.run(im_merged, "Scale Bar...", "width=20 height=20 font=40 horizontal bold overlay")
 
-    # Save image
+    # Save the merged image
     IJ.saveAs(im_merged, "Jpeg", output_folder + "Well_" + str(i + 1) + ".jpg")
 
-    # Close all image windows without save prompts
-    for i in reversed(range(WindowManager.getImageCount())):
-        img = WindowManager.getImage(i + 1)
+    # Close all images
+    for j in reversed(range(WindowManager.getImageCount())):
+        img = WindowManager.getImage(j + 1)
         if img is not None:
             img.changes = False
             img.close()
@@ -42,14 +50,14 @@ def process_pair(folder, actin_name, dapi_name, i, output_folder):
 
 ########### Main Script ###########
 
-# Paths to input images
 data_folder = "D:\\micro_data\\Marijn1"
 output_folder = "C:/Users/20203226/OneDrive - TU Eindhoven/8NM20 optical microscopy/paper review/pipelines/data_marijn_1/"
 
 file_names = [f for f in os.listdir(data_folder) if f.endswith(".tif")]
-actin_names = sorted([x for x in file_names if x.split("_")[2] == u"ACTIN"])
-dapi_names = sorted([x for x in file_names if x.split("_")[2] == u"DAPI"])
+actin_names = sorted([x for x in file_names if "ACTIN" in x])
+dapi_names = sorted([x for x in file_names if "DAPI" in x])
 
-# for i in range(len(actin_names)):
 for i in range(len(actin_names)):
     process_pair(data_folder, actin_names[i], dapi_names[i], i, output_folder)
+
+
