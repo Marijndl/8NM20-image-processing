@@ -55,7 +55,8 @@ The scripts are designed to work with a specific, underscore-delimited file nami
 This script corrects for fluorescence bleed-through from the Actin channel into the ZO-1 channel and creates a mask of the tight junctions.
 
 1.  **Determine Correction Factor:** The `correction_factor` variable compensates for Actin signal that has bled into the ZO-1 channel. This value is dataset-specific. You can determine it using the **Coloc 2** plugin in Fiji on a representative image pair (Actin and ZO-1). Update this value in the script.
-    - `ZO_preprocess.py`: `correction_factor = 0.185`
+    - `ZO_preprocess.py` (Marijn1): `correction_factor = 0.185`
+    - `ZO_preprocess.py` (Marijn2): `correction_factor = 0.147`
     - `ZO_preprocess_rick.py`: `correction_factor = 0.115`
 
 2.  **Run the Script in Fiji:**
