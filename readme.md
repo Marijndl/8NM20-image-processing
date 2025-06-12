@@ -2,20 +2,21 @@
 
 This repository contains a set of Jython and Python scripts designed to automate the analysis of fluorescence microscopy images in ImageJ/Fiji. The primary goal is to segment individual cells and quantify the intensity of a protein of interest (like ZO-1) specifically at the tight junctions between cells.
 
-The pipeline involves three main stages:
+The pipeline involves four main stages:
 1.  **Preprocessing:** Correcting for spectral bleed-through between fluorescence channels and isolating the tight junction signal.
 2.  **Segmentation & Measurement:** Identifying individual cells to create Regions of Interest (ROIs) and using these ROIs to measure the tight junction signal for each cell.
 3.  **Data Summarization:** Aggregating the measurement results from multiple images into a single summary table.
+4.  **Visualization:** Creating composite color images and assembling them into a final montage figure.
 
 ## Prerequisites
 
 - **[Fiji](https://fiji.sc/)**: An ImageJ distribution with bundled plugins.
   - The scripts rely on the Jython interpreter, which is included with Fiji.
   - **Required Plugin**: `Rigid Registration`. This is often part of larger plugin suites like `bUnwarpJ` or `TurboReg`. Please ensure it is installed in Fiji.
-- **Python 3**: For the final data summarization step.
-  - **Required Library**: `pandas`. Install it via pip:
+- **Python 3**: For data summarization and image combination steps.
+  - **Required Libraries**: `pandas`, `matplotlib`, and `Pillow`. Install them via pip:
     ```bash
-    pip install pandas
+    pip install pandas matplotlib Pillow
     ```
 - **Raw Data**: Your microscopy images in `.tif` format, with separate files for each channel.
 
@@ -46,8 +47,8 @@ The scripts are designed to work with a specific, underscore-delimited file nami
     - Create an **output directory** where all processed images and results will be saved.
 
 3.  **Configure Scripts:**
-    - Open `ZO_preprocess.py` (or `ZO_preprocess_rick.py`), `cell_segment_and_analysis.py`, and `summarize csv's.py` in a text editor.
-    - Update the `data_folder` and `output_folder` variables in each script to point to your input and output directories.
+    - Open the relevant scripts (`ZO_preprocess.py`, `cell_segment_and_analysis.py`, `create_image.py`, etc.) in a text editor.
+    - Update the `data_folder` and `output_folder` (or similar) variables in each script to point to your input and output directories.
 
 ### Step 1: Preprocess ZO-1 Channel (`ZO_preprocess.py`)
 
@@ -94,19 +95,54 @@ This script uses the Actin and DAPI channels to identify individual cells (segme
 
 ### Step 3: Summarize All Results (`summarize csv's.py`)
 
-This final script aggregates the data from all the individual `Results_*.csv` files into a single, easy-to-read summary table. This is a standard Python script and should be run outside of Fiji.
+This Python script aggregates the data from all the individual `Results_*.csv` files into a single, easy-to-read summary table. This should be run outside of Fiji.
 
 1.  **Configure Path:** Make sure the `folder_path` variable in `summarize csv's.py` points to your `output_folder`.
 
 2.  **Run the Script from your Terminal:**
-    - Open a terminal or command prompt.
-    - Navigate to the repository directory.
+    - Open a terminal or command prompt and navigate to the repository directory.
     - Run the script:
       ```bash
       python "summarize csv's.py"
       ```
 
-3.  **Output:** The script will print a tab-separated table to the console. Each row represents one of the original images, showing the filename, the number of cells analyzed, and the average value for each measurement column (e.g., Mean, Area, etc.). You can copy-paste this output directly into a spreadsheet program like Excel.
+3.  **Output:** The script will print a tab-separated table to the console. Each row represents one of the original images, showing statistics like the number of cells analyzed and the average value for each measurement column.
+
+### Step 4: Create Visualization Montages (Optional)
+
+This two-part process first creates merged color images for each well and then assembles them into a final montage.
+
+#### Part A: Generate Individual Merged Images (`create_image.py`)
+
+This ImageJ/Jython macro creates a composite color image (ZO-1, Actin, DAPI) for each well.
+
+1.  **Prerequisites:** Ensure Step 1 (`ZO_preprocess.py`) has been completed, as this script requires its output files (`processed_zo1_*.tif` and `TJ_*.tif`).
+2.  **Run in Fiji:**
+    - Open `create_image.py` in Fiji's Script Editor.
+    - Ensure the `data_folder` and `output_folder` variables are correct.
+    - Click **Run**.
+3.  **Output:** The script will save one `Well_[i+1].jpg` file for each image set in your output folder.
+
+#### Part B: Assemble Montages (`combine_images.py` & `combine_images_row.py`)
+
+These Python scripts use the JPEGs from the previous step to create a final, publication-ready montage.
+
+1.  **Configure Scripts:**
+    - Open `combine_images.py` and/or `combine_images_row.py` in a text editor.
+    - Update the `image_dir` variable to your output folder.
+    - If necessary, update the `cell_lines` list to match your experimental setup.
+2.  **Run from Terminal:**
+    - `combine_images.py`: Creates a 4x2 montage that includes negative controls.
+      ```bash
+      python combine_images.py
+      ```
+    - `combine_images_row.py`: Creates a 2x2 montage without negative controls.
+       ```bash
+      python combine_images_row.py
+       ```
+3.  **Output:**
+    - `Final_Montage.jpg`: The full montage with negative controls.
+    - `Final_Montage_no_neg_ctrl.jpg`: The montage without negative controls.
 
 ## Script Details
 
@@ -145,3 +181,19 @@ This final script aggregates the data from all the individual `Results_*.csv` fi
     3.  It calculates the mean for all measurement columns.
     4.  It counts the total number of cells (`Total Count`) and the number of cells with an area of zero (`Zero Area Count`), which are cells without ZO-1 signal.
     5.  Prints a formatted summary to the console.
+
+#### `create_image.py`
+- **Purpose:** To create a composite, multi-channel image for visualization.
+- **Key Steps:**
+    1.  Opens the original Actin and DAPI images, along with the preprocessed ZO-1 image and its tight junction mask from Step 1.
+    2.  Applies the junction mask to the ZO-1 image, isolating the signal of interest.
+    3.  Merges the masked ZO-1 (red channel), Actin (green channel), and DAPI (blue channel) into a single color image.
+    4.  Adds a scale bar and saves the result as a high-quality JPEG (`Well_*.jpg`).
+
+#### `combine_images.py` & `combine_images_row.py`
+- **Purpose:** To assemble the individual `Well_*.jpg` images into a single montage figure.
+- **Key Steps:**
+    1.  Loads a specific set of `Well_*.jpg` files from the output directory.
+    2.  Uses `matplotlib` to arrange the images in a grid (4x2 for `combine_images.py`, 2x2 for `combine_images_row.py`).
+    3.  Adds titles to each subplot based on a hardcoded list of cell line names.
+    4.  Saves the final figure as a high-resolution JPEG, removing extra whitespace.
